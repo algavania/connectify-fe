@@ -69,7 +69,6 @@ export default {
            const res = await axios.post(`${this.$api}/auth/login`, {
             email: this.email,
             password: this.password});
-            EventBus.$emit("showSnackbar", "Sign in success", "green");
 
             if (res.status != 200) {
               EventBus.$emit("showSnackbar", res.data.message, "red");

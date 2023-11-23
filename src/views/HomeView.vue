@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire" class="background fill-height">
+  <div id="inspire" class="background fill-height" style="width: 100%;">
     <v-row>
       <v-col cols="8">
         <div>
@@ -7,20 +7,22 @@
             <v-divider class="mb-7"></v-divider>
             <v-row>
               <v-col cols="auto"></v-col>
-              <v-avatar color="primary"></v-avatar>
+              <v-avatar color="primary">
+                <img v-if="userDetail.photo_url" :src="`${this.$baseUrl}/${userDetail.photo_url}`" alt="">
+              </v-avatar>
               <v-col>
                 <v-textarea
                   class="pt-0 mt-0 tweet-input"
                   counter="280"
                   rows="3"
                   auto-grow
-                  v-model="tweetText"
+                  v-model="postText"
                   placeholder="What is happening?!"
                 ></v-textarea>
                 <div class="d-flex justify-end mt-3">
                   <v-btn
                     @click="sendPost"
-                    :disabled="!tweetText || tweetText.length > 280"
+                    :disabled="!postText || postText.length > 280"
                     :loading="isLoading"
                     rounded
                     color="primary"
@@ -32,7 +34,9 @@
             <v-divider class="mt-3"></v-divider>
             <div v-if="posts">
               <div v-for="post in posts" :key="post.id">
-                <PostComponent class="pa-5" :post="post" />
+                <router-link :to="`/${post.user.username}/post/${post.id}`">
+                  <PostComponent @deleteData="deleteData" :post="post" />
+                </router-link>
                 <v-divider></v-divider>
               </div>
             </div>
@@ -44,7 +48,7 @@
       </v-col>
       <v-col> Search </v-col>
     </v-row>
-  </v-app>
+  </div>
 </template>
 
 <script>
@@ -59,15 +63,41 @@ export default {
   },
   data: () => ({
     isLoading: false,
-    tweetText: "",
+    postText: "",
+    userDetail: {},
     posts: [],
   }),
   mounted() {
+    this.getUser();
     this.getPosts();
   },
   methods: {
     toggleDrawer() {
       this.drawer = !this.drawer;
+    },
+    deleteData(id) {
+      this.posts = this.posts.filter(obj => obj.id !== id);
+    },
+    async getUser() {
+      EventBus.$emit("startLoading");
+      try {
+        this.user = JSON.parse(localStorage.getItem("user"));
+        const res = await axios.get(`${this.$api}/user/${this.user.username}`);
+        console.log("res", res);
+        this.user = res.data.data;
+        localStorage.setItem("user", JSON.stringify(this.user));
+      } catch (e) {
+        EventBus.$emit("showSnackbar", e.response.data.message, "red");
+      }
+      EventBus.$emit("stopLoading");
+      try {
+        const userDetailRes = await axios.get(
+          `${this.$api}/user-detail/${this.user.id}`
+        );
+        this.userDetail = userDetailRes.data.data;
+      } catch (e) {
+        console.log(e);
+      }
     },
     async getPosts() {
       try {
@@ -80,10 +110,10 @@ export default {
     async sendPost() {
       try {
         this.isLoading = true;
-        await axios.post(
+        const res = await axios.post(
           `${this.$api}/post`,
           {
-            content: this.tweetText,
+            content: this.postText,
           },
           {
             headers: {
@@ -91,8 +121,10 @@ export default {
             },
           }
         );
+        console.log("res",res);
+        this.posts.unshift(res.data.data);
         EventBus.$emit("showSnackbar", "Post has been sent!", "green");
-        this.tweetText = "";
+        this.postText = "";
       } catch (e) {
         EventBus.$emit("showSnackbar", e.response.data.message, "red");
       }

@@ -57,12 +57,6 @@ export default {
     },
   },
   data: () => ({
-    links: [
-      ["mdi-home", "Home"],
-      ["mdi-chat", "Messages"],
-      ["mdi-account", "Profile"],
-      ["mdi-account", "Logout"],
-    ],
     snackbar: false,
     text: "",
     timeout: 3000,
@@ -115,6 +109,11 @@ export default {
 
 .small-heading-size {
   font-size: 1.8rem;
+  line-height: 3rem;
+}
+
+.smaller-heading-size {
+  font-size: 1.6rem;
   line-height: 3rem;
 }
 

@@ -1,37 +1,62 @@
 <template>
-  <div class="d-flex">
-    <v-avatar color="primary"></v-avatar>
-    <div class="ml-3" style="width: 100%; position: relative;">
-      <div class="d-flex justify-space-between">
-        <div class="grey--text">
-          <span class="font-weight-bold white--text">{{
-            post.user.username
-          }}</span>
-          @{{ post.user.username }} - <TimeAgo :datetime="post.created_at" />
+  <div class="white--text">
+    <div class="d-flex pa-5">
+      <router-link :to="`/${post.user.username}`">
+        <v-avatar color="primary">
+        <img v-if="post.user_detail.photo_url" :src="`${this.$baseUrl}/${post.user_detail.photo_url}`" alt="">
+      </v-avatar>
+      </router-link>
+      <div class="ml-3" style="width: 100%; position: relative">
+        <div class="d-flex justify-space-between">
+          <div class="grey--text">
+            <span class="font-weight-bold white--text">{{
+              post.user_detail.name
+            }}</span>
+            @{{ post.user.username }} - <TimeAgo :datetime="post.created_at" />
+          </div>
+          <div
+            style="position: absolute; right: 0"
+            v-if="post.user.id == user.id"
+          >
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  to="#"
+                  icon
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  x-small
+                  :ripple="false"
+                >
+                  <v-icon>mdi-dots-horizontal</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deletePost">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </div>
         </div>
-        <div style="position: absolute; right: 0;" v-if="post.user.id == user.id">
-          <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon dark v-bind="attrs" v-on="on" x-small ripple="false">
-                <v-icon>mdi-dots-horizontal</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item v-for="(item, index) in items" :key="index">
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+
+        <div>
+          <div v-html="post.content" v-linkified></div>
+          <div class="d-flex mt-3">
+            <v-icon>mdi-comment</v-icon>
+            <div class="ml-1">{{ post.comment_count ? post.comment_count : 0 }}</div>
+          </div>
         </div>
       </div>
-
-      <div>{{ post.content }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import { TimeAgo } from "vue2-timeago";
+import axios from "axios";
+import EventBus from "@/event-bus";
 
 export default {
   name: "PostComponent",
@@ -40,12 +65,28 @@ export default {
     TimeAgo,
   },
   data: () => ({
-    items: [{ title: "Delete" }],
-    user: {}
+    user: {},
   }),
+  watch: {
+    post: {
+      handler: "parseText",
+      immediate: true,
+    },
+  },
   mounted() {
     this.user = JSON.parse(localStorage.getItem("user"));
-  }
+  },
+  methods: {
+    parseText() {},
+    async deletePost() {
+      try {
+        await axios.delete(`${this.$api}/post/${this.post.id}`);
+        this.$emit("deleteData", this.post.id);
+      } catch (e) {
+        EventBus.$emit("showSnackbar", e.response.data.message, "red");
+      }
+    },
+  },
 };
 </script>
 

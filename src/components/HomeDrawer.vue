@@ -2,17 +2,18 @@
   <v-navigation-drawer v-model="drawer" class="background" app v-if="user.id">
     <v-list>
       <v-list-item
-        v-for="[icon, text] in links"
-        :key="icon"
+        v-for="item in links"
+        :key="item.text"
         link
-        @click="text == 'Logout' ? logout() : null"
+        :to="item.text == 'Logout' ? null :item.route"
+        @click="item.text == 'Logout' ? logout() : null"
       >
         <v-list-item-icon>
-          <v-icon>{{ icon }}</v-icon>
+          <v-icon>{{ item.icon }}</v-icon>
         </v-list-item-icon>
 
         <v-list-item-content>
-          <v-list-item-title>{{ text }}</v-list-item-title>
+          <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -28,10 +29,20 @@ export default {
     drawer: null,
     user: {},
     links: [
-      ["mdi-home", "Home"],
-      ["mdi-chat", "Messages"],
-      ["mdi-account", "Profile"],
-      ["mdi-account", "Logout"],
+      {
+        icon: "mdi-home",
+        text: "Home",
+        route: "/home"
+      },
+      {
+        icon: "mdi-account",
+        text: "Profile",
+        route: ""
+      },
+      {
+        icon: "mdi-logout",
+        text: "Logout",
+      },
     ],
   }),
   mounted() {
@@ -41,6 +52,7 @@ export default {
   methods: {
     getUser() {
         this.user = JSON.parse(localStorage.getItem("user"));
+        this.links[1].route = `/${this.user.username}`;
     },
     logout() {
         localStorage.clear();
