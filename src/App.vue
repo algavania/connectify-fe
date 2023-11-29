@@ -93,6 +93,10 @@ export default {
   text-transform: none !important;
 }
 
+body {
+  background-color: black;
+}
+
 .archivo-font {
   font-family: "Archivo Black", sans-serif !important;
 }
