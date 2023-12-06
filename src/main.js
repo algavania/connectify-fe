@@ -2,7 +2,6 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import vuetify from "./plugins/vuetify";
-import store from "./store";
 import VueGlobalVar from "vue-global-var";
 import EventBus from "./event-bus";
 import axios from "axios";
@@ -30,6 +29,5 @@ Vue.mixin({
 new Vue({
   router,
   vuetify,
-  store,
   render: (h) => h(App),
 }).$mount("#app");

@@ -110,7 +110,6 @@ export default {
     this.user = JSON.parse(localStorage.getItem("user"));
   },
   methods: {
-    parseText() {},
     async deletePost() {
       try {
         await axios.delete(`${this.$api}/post/${this.post.id}`);
