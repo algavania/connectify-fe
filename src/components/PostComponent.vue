@@ -49,17 +49,27 @@
           <div v-html="post.content" v-linkified></div>
           <div v-if="post.media1" class="mt-5">
             <v-row>
-              <v-col :class="i > 1 && !post.media2 ? 'd-none' : ''" :cols="post.media2 ? '6' : '12'" v-for="i in 4" :key="i">
-                <a :href="`${$baseUrl}/${post[`media${i}`]}`" target="__blank">
-                  <v-img
-                  :src="`${$baseUrl}/${post[`media${i}`]}`"
-                  height="100%"
-                  class="rounded-lg"
-                  :width="post.media2 ? '100%' : '30rem'"
-                  :style="`height: ${post.media2 ? '180px' : '292px'}`"
-                  cover
-                ></v-img>
-                </a>
+              <v-col
+                :class="i > 1 && !post.media2 ? 'd-none' : ''"
+                :cols="post.media2 ? '6' : '12'"
+                v-for="i in 4"
+                :key="i"
+              >
+                <div v-if="`${post[`media${i}`]}`.toString() != 'null'">
+                  <a
+                    :href="`${$baseUrl}/${post[`media${i}`]}`"
+                    target="__blank"
+                  >
+                    <v-img
+                      :src="`${$baseUrl}/${post[`media${i}`]}`"
+                      height="100%"
+                      class="rounded-lg"
+                      :width="post.media2 ? '100%' : '30rem'"
+                      :style="`height: ${post.media2 ? '180px' : '292px'}`"
+                      cover
+                    ></v-img>
+                  </a>
+                </div>
               </v-col>
             </v-row>
           </div>
