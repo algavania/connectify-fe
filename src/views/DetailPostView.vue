@@ -1,36 +1,13 @@
 <template>
   <div>
     <PostComponent :post="post" :key="postKey" />
-    <v-row class="pa-2">
-      <v-col cols="auto"></v-col>
-      <v-avatar color="primary">
-        <img
-          v-if="userDetail.photo_url"
-          :src="`${this.$baseUrl}/${userDetail.photo_url}`"
-          alt=""
-        />
-      </v-avatar>
-      <v-col>
-        <v-textarea
-          class="pt-0 mt-0 tweet-input"
-          counter="280"
-          rows="3"
-          auto-grow
-          v-model="postText"
-          placeholder="Post your reply"
-        ></v-textarea>
-        <div class="d-flex justify-end mt-3">
-          <v-btn
-            @click="sendPost"
-            :disabled="!postText || postText.length > 280"
-            :loading="isLoading"
-            rounded
-            color="primary"
-            >Reply</v-btn
-          >
-        </div>
-      </v-col>
-    </v-row>
+    <PostTweetComponent
+      class="mr-6"
+      v-if="userDetail"
+      :userDetail="userDetail"
+      :parentPostId="post.id"
+      @addPosts="addPosts"
+    />
     <v-divider class="mt-3"></v-divider>
     <div v-if="posts">
       <div v-for="post in posts" :key="post.id">
@@ -47,6 +24,7 @@
 /* eslint-disable */
 import { EventBus } from "@/event-bus";
 import PostComponent from "@/components/PostComponent.vue";
+import PostTweetComponent from "@/components/PostTweetComponent.vue";
 import axios from "axios";
 
 export default {
@@ -54,15 +32,14 @@ export default {
   props: ["postProp", "userProp"],
   components: {
     PostComponent,
+    PostTweetComponent,
   },
   data: () => ({
     post: {},
     postKey: 0,
     userDetail: {},
     currentUser: {},
-    postText: "",
     posts: [],
-    isLoading: false,
   }),
   mounted() {
     this.functionOnMounted();
@@ -73,6 +50,14 @@ export default {
     },
   },
   methods: {
+    addPosts(data) {
+      this.posts.unshift(data);
+      if (!this.post.comment_count) {
+        this.post.comment_count = 0;
+      }
+      this.post.comment_count++;
+      this.postKey++;
+    },
     deleteData(id) {
       this.posts = this.posts.filter((obj) => obj.id !== id);
     },
@@ -106,7 +91,7 @@ export default {
           `${this.$api}/user-detail/${user.id}`
         );
         this.userDetail = userDetailRes.data.data;
-        console.log(this.userDetail)
+        console.log(this.userDetail);
       } catch (e) {
         console.log(e);
       }
@@ -130,35 +115,6 @@ export default {
       } catch (e) {
         EventBus.$emit("showSnackbar", e.response.data.message, "red");
       }
-    },
-    async sendPost() {
-      try {
-        this.isLoading = true;
-        const res = await axios.post(
-          `${this.$api}/post`,
-          {
-            content: this.postText,
-            parent_post_id: this.post.id,
-          },
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        this.posts.unshift(res.data.data);
-        if (!this.post.comment_count) {
-          this.post.comment_count = 0;
-        }
-        this.post.comment_count++;
-        this.postKey++;
-        console.log(this.post);
-        EventBus.$emit("showSnackbar", "Reply has been sent!", "green");
-        this.postText = "";
-      } catch (e) {
-        EventBus.$emit("showSnackbar", e.response.data.message, "red");
-      }
-      this.isLoading = false;
     },
   },
 };
